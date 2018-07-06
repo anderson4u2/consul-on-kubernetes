@@ -25,7 +25,7 @@ spec:
         fsGroup: 1000
       containers:
         - name: consul
-          image: "consul:0.9.1"
+          image: "consul:1.2.0"
           env:
             - name: POD_IP
               valueFrom:
@@ -40,28 +40,22 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.namespace
+            - name: CONSUL_LOCAL_CONFIG
+              valueFrom:
+                configMapKeyRef:
+                  name: consul
+                  key: server.json
           args:
             - "agent"
             - "-advertise=$(POD_IP)"
-            - "-bind=0.0.0.0"
             - "-bootstrap-expect=3"
             - "-retry-join=consul-0.consul.$(NAMESPACE).svc.cluster.local"
             - "-retry-join=consul-1.consul.$(NAMESPACE).svc.cluster.local"
             - "-retry-join=consul-2.consul.$(NAMESPACE).svc.cluster.local"
-            - "-client=0.0.0.0"
-            - "-config-file=/consul/config/server.json"
-            - "-datacenter=dc1"
-            - "-data-dir=/consul/data"
-            - "-domain=cluster.local"
             - "-encrypt=$(GOSSIP_ENCRYPTION_KEY)"
-            - "-server"
-            - "-ui"
-            - "-disable-host-node-id"
           volumeMounts:
             - name: data
               mountPath: /consul/data
-            - name: config
-              mountPath: /consul/config
             - name: tls
               mountPath: /etc/tls
           lifecycle:
@@ -91,9 +85,6 @@ spec:
             - containerPort: 8300
               name: server
       volumes:
-        - name: config
-          configMap:
-            name: consul
         - name: tls
           secret:
             secretName: consul  

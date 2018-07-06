@@ -15,7 +15,7 @@ This tutorial leverages features available in Kubernetes 1.6.0 and later.
 
 The following clients must be installed on the machine used to follow this tutorial:
 
-* [consul](https://www.consul.io/downloads.html) 0.9.0
+* [consul](https://www.consul.io/downloads.html) 1.2.0
 * [cfssl](https://pkg.cfssl.org) and [cfssljson](https://pkg.cfssl.org) 1.2
 
 ## Usage
@@ -65,7 +65,7 @@ consul.pem
 [Gossip communication](https://www.consul.io/docs/internals/gossip.html) between Consul members will be encrypted using a shared encryption key. Generate and store an encrypt key:
 
 ```
-GOSSIP_ENCRYPTION_KEY=$(consul keygen)
+export GOSSIP_ENCRYPTION_KEY=$(consul keygen)
 ```
 
 ### Create the Consul Secret and Configmap
@@ -127,11 +127,11 @@ kubectl logs consul-0
 The consul CLI can also be used to check the health of the cluster. In a new terminal start a port-forward to the `consul-0` pod.
 
 ```
-kubectl port-forward consul-0 8400:8400
+kubectl port-forward consul-0 8500:8500
 ```
 ```
-Forwarding from 127.0.0.1:8400 -> 8400
-Forwarding from [::1]:8400 -> 8400
+Forwarding from 127.0.0.1:8500 -> 8500
+Forwarding from [::1]:8500 -> 8500
 ```
 
 Run the `consul members` command to view the status of each cluster member.
@@ -140,10 +140,10 @@ Run the `consul members` command to view the status of each cluster member.
 consul members
 ```
 ```
-Node      Address           Status  Type    Build  Protocol  DC
-consul-0  10.176.4.30:8301  alive   server  0.7.2  2         dc1
-consul-1  10.176.4.31:8301  alive   server  0.7.2  2         dc1
-consul-2  10.176.1.16:8301  alive   server  0.7.2  2         dc1
+Node      Address           Status  Type    Build  Protocol  DC   Segment
+consul-0  10.136.8.78:8301  alive   server  1.2.0  2         dc1  <all>
+consul-1  10.136.7.41:8301  alive   server  1.2.0  2         dc1  <all>
+consul-2  10.136.9.27:8301  alive   server  1.2.0  2         dc1  <all>
 ```
 
 ### Accessing the Web UI
