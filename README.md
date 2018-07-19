@@ -15,7 +15,7 @@ This tutorial leverages features available in Kubernetes 1.6.0 and later.
 
 The following clients must be installed on the machine used to follow this tutorial:
 
-* [consul](https://www.consul.io/downloads.html) 1.2.0
+* [consul](https://www.consul.io/downloads.html) 1.2.1
 * [cfssl](https://pkg.cfssl.org) and [cfssljson](https://pkg.cfssl.org) 1.2
 
 ## Usage
@@ -141,9 +141,9 @@ consul members
 ```
 ```
 Node      Address           Status  Type    Build  Protocol  DC   Segment
-consul-0  10.136.8.78:8301  alive   server  1.2.0  2         dc1  <all>
-consul-1  10.136.7.41:8301  alive   server  1.2.0  2         dc1  <all>
-consul-2  10.136.9.27:8301  alive   server  1.2.0  2         dc1  <all>
+consul-0  10.136.8.78:8301  alive   server  1.2.1  2         dc1  <all>
+consul-1  10.136.7.41:8301  alive   server  1.2.1  2         dc1  <all>
+consul-2  10.136.9.27:8301  alive   server  1.2.1  2         dc1  <all>
 ```
 
 ### Accessing the Web UI
