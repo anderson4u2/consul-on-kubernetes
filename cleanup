@@ -1,5 +1,6 @@
 #!/bin/sh
 
+# This is now a series of notes for creating and deleting resources, should not be executed
 rm ca-key.pem ca.csr ca.pem consul-key.pem consul.csr consul.pem
 kubectl delete statefulset consul
 kubectl delete pvc data-consul-0 data-consul-1 data-consul-2
@@ -7,3 +8,13 @@ kubectl delete svc consul
 kubectl delete jobs consul-join
 kubectl delete secrets consul
 kubectl delete configmaps consul
+
+kubectl create configmap consul --from-file=configs/server.json
+kubectl create secret generic consul \
+  --from-literal="gossip-encryption-key=${GOSSIP_ENCRYPTION_KEY}"
+kubectl create -f services/consul.yaml
+kubectl create -f statefulsets/consul.yaml
+
+kubectl get pods
+
+kubectl logs consul-0

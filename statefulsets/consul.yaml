@@ -1,25 +1,52 @@
-apiVersion: apps/v1beta1
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: consul-config
+data:
+  server.json: |-
+    {
+      "bind_addr": "0.0.0.0",
+      "client_addr": "0.0.0.0",
+      "disable_host_node_id": true,
+      "data_dir": "/consul/data",
+      "datacenter": "dc1",
+      "telemetry": {
+        "prometheus_retention_time": "5m"
+      },
+      "ports": {
+        "http": 8500
+      },
+      "server": true,
+      "ui": true
+    }
+---
+apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: consul
 spec:
+  selector:
+    matchLabels:
+      app: consul # has to match .spec.template.metadata.labels
   serviceName: consul
   replicas: 3
   template:
     metadata:
       labels:
-        app: consul
+        app: consul # has to match .spec.selector.matchLabels
     spec:
       affinity:
         podAntiAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            - labelSelector:
-                matchExpressions:
-                  - key: app
-                    operator: In
-                    values:
-                      - consul
-              topologyKey: kubernetes.io/hostname
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - consul
+                topologyKey: kubernetes.io/hostname
       terminationGracePeriodSeconds: 10
       securityContext:
         fsGroup: 1000
@@ -40,24 +67,20 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.namespace
-            - name: CONSUL_LOCAL_CONFIG
-              valueFrom:
-                configMapKeyRef:
-                  name: consul
-                  key: server.json
           args:
             - "agent"
             - "-advertise=$(POD_IP)"
             - "-bootstrap-expect=3"
-            - "-retry-join=consul-0.consul.$(NAMESPACE).svc.cluster.local"
-            - "-retry-join=consul-1.consul.$(NAMESPACE).svc.cluster.local"
-            - "-retry-join=consul-2.consul.$(NAMESPACE).svc.cluster.local"
+            - "-retry-join=consul-0.consul.$(NAMESPACE).svc"
+            - "-retry-join=consul-1.consul.$(NAMESPACE).svc"
+            - "-retry-join=consul-2.consul.$(NAMESPACE).svc"
             - "-encrypt=$(GOSSIP_ENCRYPTION_KEY)"
+            - "-config-file=/consul/myconfig/server.json"
           volumeMounts:
             - name: data
               mountPath: /consul/data
-            - name: tls
-              mountPath: /etc/tls
+            - name: config
+              mountPath: /consul/myconfig
           lifecycle:
             preStop:
               exec:
@@ -72,8 +95,6 @@ spec:
               name: alt-port
             - containerPort: 53
               name: udp-port
-            - containerPort: 8443
-              name: https-port
             - containerPort: 8080
               name: http-port
             - containerPort: 8301
@@ -85,9 +106,9 @@ spec:
             - containerPort: 8300
               name: server
       volumes:
-        - name: tls
-          secret:
-            secretName: consul  
+        - name: config
+          configMap:
+            name: consul-config
   volumeClaimTemplates:
     - metadata:
         name: data
